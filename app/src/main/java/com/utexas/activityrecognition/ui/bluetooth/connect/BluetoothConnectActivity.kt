@@ -11,7 +11,6 @@ import android.os.Message
 import android.util.Log
 import android.view.View
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import java.io.IOException
@@ -22,6 +21,7 @@ const val REQUEST_ENABLE_BT = 5
 //Note to change some consts to an uncommitted file since we have a public repo
 val MY_UUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
 const val NAME = "Bluetooth Risk Reduction Android"
+const val UTHAR_DEVICE_NAME = "UTHAR_DEVICE"
 var bluetoothAdapter: BluetoothAdapter? = null
 
 class BluetoothConnectActivity : AppCompatActivity() {
@@ -34,10 +34,22 @@ class BluetoothConnectActivity : AppCompatActivity() {
 
     fun connectDevice(view: View) {
         findViewById<Button>(R.id.connect_button).isEnabled = false
-        val macAddress = findViewById<EditText>(R.id.mac_address_field).text.toString().trim()
-        val device: BluetoothDevice? = bluetoothAdapter?.getRemoteDevice(macAddress)
-        val connectThread: ConnectThread? = device?.let { ConnectThread(it) }
-        connectThread?.start()
+
+        val device: BluetoothDevice? = getDevice()
+
+        device?.let {
+            ConnectThread(it).start()
+        }
+    }
+
+    private fun getDevice(): BluetoothDevice? {
+        val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
+        pairedDevices?.forEach { device ->
+            if (device.name == UTHAR_DEVICE_NAME){
+                return device
+            }
+        }
+        return null
     }
 
     private fun manageMyConnectedSocket(socket: BluetoothSocket){

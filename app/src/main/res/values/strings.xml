@@ -19,5 +19,4 @@
     <string name="api_register">api/register/</string>
     <string name="images_placed_here">Images placed here</string>
     <string name="connect">Connect</string>
-    <string name="mac_address">MAC Address</string>
 </resources>
