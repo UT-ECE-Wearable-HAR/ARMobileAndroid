@@ -22,9 +22,10 @@ import java.util.Map;
 
 public class RecogitionAPIImpl implements RecognitionAPI {
     final static String TAG = RecogitionAPIImpl.class.getCanonicalName();
+    final static int TIMEOUT_MS = 3000;
     static RecogitionAPIImpl  Instance = new RecogitionAPIImpl();
 
-    public static RecogitionAPIImpl Instance () {
+    public static RecogitionAPIImpl getInstance() {
         return Instance;
     }
 
@@ -77,7 +78,17 @@ public class RecogitionAPIImpl implements RecognitionAPI {
 
     @Override
     public boolean ConnectImgSocket(Context context) {
-        return false;
+        CallerThread callerThread = new CallerThread(context);
+        callerThread.setURL(context.getResources().getString(R.string.base_url)
+                + context.getResources().getString(R.string.api_connect));
+        try {
+            callerThread.start();
+            callerThread.join();
+        } catch(Exception e) {
+            Log.e(TAG, e.getMessage());
+            return false;
+        }
+        return (callerThread.getResult() && callerThread.responseBody.equals("Connected"));
     }
 
     @Override
@@ -106,30 +117,29 @@ public class RecogitionAPIImpl implements RecognitionAPI {
                 httpURLConnection.setInstanceFollowRedirects(false);
                 HttpURLConnection.setFollowRedirects(false);
                 httpURLConnection.setRequestMethod("POST");
-                String cookies="";
+                httpURLConnection.setConnectTimeout(TIMEOUT_MS);
+                String cookies = "";
                 for(HttpCookie cookie:cookieStore.get(new URI(context.getResources().getString(R.string.base_url))))
-                    cookies+=cookie+"; ";
-                httpURLConnection.setRequestProperty("Cookie",cookies);
+                    cookies += cookie + "; ";
+                httpURLConnection.setRequestProperty("Cookie", cookies);
                 DataOutputStream output = new DataOutputStream(httpURLConnection.getOutputStream());
-                output.writeBytes(responseBody);
+                if(responseBody != null) {
+                    output.writeBytes(responseBody);
+                }
                 output.flush();
                 output.close();
                 int status = httpURLConnection.getResponseCode();
-                Log.e(TAG, String.valueOf(status));
                 if (status != HttpURLConnection.HTTP_OK) {
                     Log.e(TAG, "Invalid status " + status);
                     success = false;
                 }
                 List<String> cookielist = httpURLConnection.getHeaderFields().get("set-cookie");
-                for(String item: cookielist) {
-                    Log.e(TAG, item);
-                }
                 if(cookielist != null)
                     for(String cookieDetail : cookielist)
                         cookieStore.add(new URI(context.getResources().getString(R.string.base_url)),HttpCookie.parse(cookieDetail).get(0));
-                byte[] b = new byte[1024*1024];
-                int len = (new DataInputStream(httpURLConnection.getInputStream())).read(b);
-                String responseBody = new String(b, 0, len);
+                byte[] readBytes = new byte[1024*1024];
+                int len = (new DataInputStream(httpURLConnection.getInputStream())).read(readBytes);
+                String responseBody = new String(readBytes, 0, len);
                 this.responseBody = responseBody;
                 httpURLConnection.disconnect();
             } catch (Exception e) {

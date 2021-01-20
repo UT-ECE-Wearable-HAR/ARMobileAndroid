@@ -1,6 +1,8 @@
 package com.utexas.activityrecognition.ui.main;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -15,9 +17,12 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.utexas.activityrecognition.R;
+import com.utexas.activityrecognition.api.impl.RecogitionAPIImpl;
+import com.utexas.activityrecognition.ui.bluetooth.connect.MyBluetoothService;
+import com.utexas.activityrecognition.ui.tcp.TcpClient;
 
 public class MainView extends AppCompatActivity {
-
+    private static final String TAG = MainView.class.getCanonicalName();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,7 +49,13 @@ public class MainView extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()){
             case R.id.menu_connect:
-                //TODO Add connection code here
+                RecogitionAPIImpl.getInstance().ConnectImgSocket(this);
+                Intent connectWearable = new Intent(this, MyBluetoothService.class);
+                startForegroundService(connectWearable);
+                return true;
+            case R.id.menu_disconnect:
+                Intent disconnectWearable = new Intent(this, MyBluetoothService.class);
+                stopService(disconnectWearable);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

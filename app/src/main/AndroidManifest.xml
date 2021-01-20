@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <!--
  If your app targets Android 9 or lower, you can declare
          ACCESS_COARSE_LOCATION instead.
@@ -19,10 +20,6 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.ActivityRecognition">
         <activity
-            android:name=".ui.bluetooth.connect.BluetoothConnectActivity"
-            android:label="BluetoothConnectActivity">
-        </activity>
-        <activity
             android:name=".ui.main.MainView"
             android:label="@string/title_activity_main_view"></activity>
         <activity
@@ -34,6 +31,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service android:name=".ui.bluetooth.connect.MyBluetoothService" />
     </application>
 
 </manifest>

@@ -7,16 +7,28 @@
     <string name="action_sign_in_short">Sign in</string>
     <string name="welcome">"Welcome "</string>
     <string name="invalid_username">Not a valid username</string>
-    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="invalid_password">Password must be > 5 characters</string>
     <string name="login_failed">"Login failed"</string>
+    <string name="api_login">api/login/</string>
+    <string name="api_logout">api/logout/</string>
+    <string name="api_register">api/register/</string>
+    <string name="api_connect">api/connect/</string>
+
     <string name="title_activity_main_view">MainActivity</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
     <string name="base_url">http://192.168.0.2:8000/</string>
-    <string name="api_login">api/login/</string>
-    <string name="api_logout">api/logout/</string>
-    <string name="api_register">api/register/</string>
+    <string name="tcp_url">192.168.0.2</string>
+
+    <string name="connect_socket">Connect to Device</string>
+    <string name="connecting_socket">Connecting</string>
+    <string name="connected_socket">Connected</string>
     <string name="images_placed_here">Images placed here</string>
     <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+
+    <string name="channel_name">ActivityRecognitionNotifications</string>
+    <string name="channel_description">Tracks Bluetooth Connection</string>
+    <string name="channel_id">ActivityRecognition</string>
 </resources>

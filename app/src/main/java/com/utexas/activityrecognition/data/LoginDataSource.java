@@ -13,14 +13,18 @@ import java.io.IOException;
 public class LoginDataSource {
 
     public Result<LoggedInUser> login(Context context, String username, String password) {
-        if(RecogitionAPIImpl.Instance().Login(context, username, password)) {
+        if(RecogitionAPIImpl.getInstance().Login(context, username, password)) {
             return new Result.Success<>(new LoggedInUser(username));
         } else {
             return new Result.Error(new IOException("Error logging in"));
         }
     }
 
-    public void logout() {
-        // TODO: revoke authentication
+    public void logout(Context context) {
+        if(RecogitionAPIImpl.getInstance().Logout(context)) {
+            return;
+        } else {
+            return;
+        }
     }
 }

@@ -7,4 +7,10 @@
         android:icon="@android:drawable/stat_sys_data_bluetooth"
         android:title="@string/connect"
         android:visible="true" />
+    <item
+        android:id="@+id/menu_disconnect"
+        android:enabled="true"
+        android:icon="@android:drawable/stat_sys_data_bluetooth"
+        android:title="@string/disconnect"
+        android:visible="true" />
 </menu>
