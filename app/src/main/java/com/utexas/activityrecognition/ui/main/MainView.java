@@ -18,6 +18,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.utexas.activityrecognition.R;
 import com.utexas.activityrecognition.api.impl.RecogitionAPIImpl;
+import com.utexas.activityrecognition.ui.bluetooth.connect.BluetoothServiceKt;
 import com.utexas.activityrecognition.ui.bluetooth.connect.MyBluetoothService;
 import com.utexas.activityrecognition.ui.tcp.TcpClient;
 
@@ -36,6 +37,19 @@ public class MainView extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
+    }
+
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if(BluetoothServiceKt.isRunning()) {
+            menu.getItem(1).setEnabled(true);
+            menu.getItem(0).setEnabled(false);
+        } else {
+            menu.getItem(1).setEnabled(false);
+            menu.getItem(0).setEnabled(true);
+        }
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override

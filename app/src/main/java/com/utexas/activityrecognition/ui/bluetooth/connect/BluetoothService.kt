@@ -40,13 +40,16 @@ const val REQUEST_ENABLE_BT = 5
 const val BT_NOTIF_ID = 1;
 //Note to change some consts to an uncommitted file since we have a public repo
 val MY_UUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
-const val UTHAR_DEVICE_NAME = "ESP_SPP_ACCEPTOR"
+const val UTHAR_DEVICE_NAME = "UTHAR_DEVICE"
 lateinit var bluetoothAdapter: BluetoothAdapter
+var isRunning = false
 // ... (Add other message types here as needed.)
 
 class MyBluetoothService : Service() {
+
     override fun onCreate() {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        isRunning = true
         super.onCreate()
     }
 
@@ -106,9 +109,14 @@ class MyBluetoothService : Service() {
         try {
             socket?.close()
             mTcpClient?.stopClient()
+            mTcpClient = null
+            lock.withLock {
+                condition.signalAll()
+            }
         } catch (e: IOException) {
             Log.e(TAG, "Could not close the connect socket", e)
         }
+        isRunning = false
         super.onDestroy()
     }
     private inner class ConnectedBluetoothThread(private val mmSocket: BluetoothSocket) : Thread() {
@@ -118,14 +126,13 @@ class MyBluetoothService : Service() {
         private val mmBuffer: ByteArray = ByteArray(1024) // mmBuffer store for the stream
 
         override fun run() {
-
-            // TODO: Replace with cancellable logic
             while(true) {
                 // Read from the InputStream.
                 val jpegBitmap: ByteArray? = try {
                     getJpegBytes()
                 } catch (e: IOException){
                     Log.d(TAG, "Input stream was disconnected", e)
+                    stopSelf()
                     break
                 }
 
@@ -140,6 +147,8 @@ class MyBluetoothService : Service() {
                 }
                 TimeUnit.MILLISECONDS.sleep(200)
             }
+            stopSelf()
+            Log.e(TAG, "Bluetooth Socket closed")
         }
 
         private fun getJpegBytes(): ByteArray? {
@@ -155,6 +164,7 @@ class MyBluetoothService : Service() {
                 mmOutStream.write(byteArrToSend)
             } catch (e: Exception) {
                 e.message?.let { Log.e(TAG, it) }
+                stopSelf()
             }
             var numBytes = mmInStream.read(mmBuffer)
             while (numBytes > 64){
@@ -168,9 +178,10 @@ class MyBluetoothService : Service() {
             val jpegBytes = ArrayList<Byte>()
             while(jpegBytes.size < size){
                 numBytes = mmInStream.read(mmBuffer)
-                jpegBytes.addAll(mmBuffer.filterIndexed { index, _ ->
+                var addBytes = mmBuffer.filterIndexed { index, _ ->
                     index < numBytes
-                }.asIterable())
+                }.asIterable()
+                jpegBytes.addAll(addBytes)
             }
             return jpegBytes.toByteArray()
         }
@@ -225,6 +236,8 @@ class MyBluetoothService : Service() {
                 }
             })
             mTcpClient.let { it?.run() }
+            Log.e(TAG, "TCP Receiver closed")
+            stopSelf()
         }
     }
 
