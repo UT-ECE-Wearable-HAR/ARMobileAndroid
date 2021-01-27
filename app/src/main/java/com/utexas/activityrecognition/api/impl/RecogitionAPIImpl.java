@@ -6,19 +6,16 @@ import android.util.Log;
 import com.utexas.activityrecognition.R;
 import com.utexas.activityrecognition.api.RecognitionAPI;
 import com.utexas.activityrecognition.data.RecognitionCookieStore;
+import com.utexas.activityrecognition.data.error.RegistrationException;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.net.CookieHandler;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
 import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
 
 public class RecogitionAPIImpl implements RecognitionAPI {
     final static String TAG = RecogitionAPIImpl.class.getCanonicalName();
@@ -61,9 +58,9 @@ public class RecogitionAPIImpl implements RecognitionAPI {
     }
 
     @Override
-    public boolean Register(Context context, String username, String password) {
+    public boolean Register(Context context, String email, String username, String password) throws RegistrationException {
         CallerThread callerThread = new CallerThread(context);
-        callerThread.setResponseBody("username=" + username + "&password=" + password);
+        callerThread.setResponseBody("email=" + email + "&username=" + username + "&password=" + password);
         callerThread.setURL(context.getResources().getString(R.string.base_url)
                 + context.getResources().getString(R.string.api_register));
         try {
@@ -73,7 +70,15 @@ public class RecogitionAPIImpl implements RecognitionAPI {
             Log.e(TAG, e.getMessage());
             return false;
         }
-        return (callerThread.getResult() && callerThread.responseBody.equals("Registered"));
+        if(callerThread.getResult() && callerThread.responseBody.equals("Username already in use")) {
+            throw new RegistrationException(R.string.username_taken);
+        }
+        else if(callerThread.getResult() && callerThread.responseBody.equals("Email already in use")) {
+            throw new RegistrationException(R.string.email_taken);
+        }
+        else {
+            return (callerThread.getResult() && callerThread.responseBody.equals("Registered"));
+        }
     }
 
     @Override

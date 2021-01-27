@@ -1,23 +1,11 @@
 package com.utexas.activityrecognition.ui.login;
 
 import android.app.Activity;
-
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
-
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
-
-import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
@@ -26,34 +14,34 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.utexas.activityrecognition.R;
-import com.utexas.activityrecognition.ui.main.MainView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
-public class LoginActivity extends AppCompatActivity {
+import com.utexas.activityrecognition.R;
+
+public class RegisterActivity extends AppCompatActivity {
 
     private LoginViewModel loginViewModel;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = getString(R.string.channel_name);
-            String description = getString(R.string.channel_description);
-            String channelId = getString(R.string.channel_id);
-            int importance = NotificationManager.IMPORTANCE_LOW;
-            NotificationChannel channel = new NotificationChannel(channelId, name, importance);
-            channel.setDescription(description);
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-        }
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_register);
         loginViewModel = new ViewModelProvider(this, new LoginViewModelFactory())
                 .get(LoginViewModel.class);
-        final EditText usernameEditText = findViewById(R.id.email);
+        final EditText emailEditText = findViewById(R.id.email);
+        final EditText usernameEditText = findViewById(R.id.username);
         final EditText passwordEditText = findViewById(R.id.password);
-        final Button loginButton = findViewById(R.id.login);
+        final EditText passwordConfirmEditText = findViewById(R.id.password_confirm);
         final Button registerButton = findViewById(R.id.register);
         final ProgressBar loadingProgressBar = findViewById(R.id.loading);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
 
         loginViewModel.getLoginFormState().observe(this, new Observer<LoginFormState>() {
             @Override
@@ -61,7 +49,10 @@ public class LoginActivity extends AppCompatActivity {
                 if (loginFormState == null) {
                     return;
                 }
-                loginButton.setEnabled(loginFormState.isDataValid());
+                registerButton.setEnabled(loginFormState.isDataValid());
+                if (loginFormState.getEmailError() != null) {
+                    emailEditText.setError(getString(loginFormState.getEmailError()));
+                }
                 if (loginFormState.getUsernameError() != null) {
                     usernameEditText.setError(getString(loginFormState.getUsernameError()));
                 }
@@ -79,10 +70,11 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 loadingProgressBar.setVisibility(View.GONE);
                 if (loginResult.getError() != null) {
-                    showLoginFailed(loginResult.getError());
+                    showRegisterFailed(loginResult.getError());
                 }
                 if (loginResult.getSuccess() != null) {
-                    updateUiWithUser(loginResult.getSuccess());
+                    String success = getString(R.string.register_success);
+                    Toast.makeText(getApplicationContext(), success, Toast.LENGTH_LONG).show();
                     setResult(Activity.RESULT_OK);
                     finish();
                 }
@@ -102,49 +94,46 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                loginViewModel.loginDataChanged(usernameEditText.getText().toString(),
-                        passwordEditText.getText().toString());
+                loginViewModel.registerDataChanged(emailEditText.getText().toString(), usernameEditText.getText().toString(),
+                        passwordEditText.getText().toString(), passwordConfirmEditText.getText().toString());
             }
         };
         usernameEditText.addTextChangedListener(afterTextChangedListener);
         passwordEditText.addTextChangedListener(afterTextChangedListener);
-        passwordEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 
+        TextView.OnEditorActionListener onEditorActionListener = new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    loginViewModel.login(LoginActivity.this, usernameEditText.getText().toString(),
-                            passwordEditText.getText().toString());
+                    loginViewModel.register(RegisterActivity.this, emailEditText.getText().toString(),
+                            usernameEditText.getText().toString(), passwordEditText.getText().toString());
                 }
                 return false;
             }
-        });
-
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                loadingProgressBar.setVisibility(View.VISIBLE);
-                loginViewModel.login(LoginActivity.this, usernameEditText.getText().toString(),
-                        passwordEditText.getText().toString());
-            }
-        });
+        };
+        passwordEditText.setOnEditorActionListener(onEditorActionListener);
+        passwordConfirmEditText.setOnEditorActionListener(onEditorActionListener);
 
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
+                loadingProgressBar.setVisibility(View.VISIBLE);
+                loginViewModel.register(RegisterActivity.this, emailEditText.getText().toString(),
+                        usernameEditText.getText().toString(), passwordEditText.getText().toString());
             }
         });
     }
-
-    private void updateUiWithUser(LoggedInUserView model) {
-        String welcome = getString(R.string.welcome) + model.getDisplayName();
-        Intent intent = new Intent(LoginActivity.this, MainView.class);
-        startActivity(intent);
-        Toast.makeText(getApplicationContext(), welcome, Toast.LENGTH_LONG).show();
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                this.finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
-    private void showLoginFailed(@StringRes Integer errorString) {
+    private void showRegisterFailed(@StringRes Integer errorString) {
         Toast.makeText(getApplicationContext(), errorString, Toast.LENGTH_SHORT).show();
     }
 }

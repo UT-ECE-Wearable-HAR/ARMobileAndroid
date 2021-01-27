@@ -2,7 +2,9 @@ package com.utexas.activityrecognition.data;
 
 import android.content.Context;
 
+import com.utexas.activityrecognition.R;
 import com.utexas.activityrecognition.api.impl.RecogitionAPIImpl;
+import com.utexas.activityrecognition.data.error.RegistrationException;
 import com.utexas.activityrecognition.data.model.LoggedInUser;
 
 import java.io.IOException;
@@ -17,6 +19,18 @@ public class LoginDataSource {
             return new Result.Success<>(new LoggedInUser(username));
         } else {
             return new Result.Error(new IOException("Error logging in"));
+        }
+    }
+
+    public Result<LoggedInUser> register(Context context, String email, String username, String password) {
+        try {
+            if (RecogitionAPIImpl.getInstance().Register(context, email, username, password)) {
+                return new Result.Success<>(new LoggedInUser(username));
+            } else {
+                return new Result.Error(new RegistrationException(R.string.register_failed));
+            }
+        } catch (RegistrationException e) {
+            return new Result.Error(e);
         }
     }
 

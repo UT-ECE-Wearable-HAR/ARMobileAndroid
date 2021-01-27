@@ -31,6 +31,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.login.RegisterActivity"
+            android:label="@string/action_register">
+        </activity>
         <service android:name=".ui.bluetooth.connect.MyBluetoothService" />
     </application>
 
