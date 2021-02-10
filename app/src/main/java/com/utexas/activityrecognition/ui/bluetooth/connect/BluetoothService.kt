@@ -75,7 +75,8 @@ class MyBluetoothService : Service() {
 
     private var mTcpClient:TcpClient? = null;
     private val lock = ReentrantLock()
-    private val condition = lock.newCondition()
+    private val imgReceivedByServer = lock.newCondition()
+    private val mpuDataReceivedByServer = lock.newCondition()
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         var builder = NotificationCompat.Builder(this, getString(R.string.channel_id))
@@ -104,7 +105,8 @@ class MyBluetoothService : Service() {
             mTcpClient?.stopClient()
             mTcpClient = null
             lock.withLock {
-                condition.signalAll()
+                imgReceivedByServer.signalAll()
+                mpuDataReceivedByServer.signalAll()
             }
         } catch (e: IOException) {
             Log.e(TAG, "Could not close the connect socket", e)
@@ -140,13 +142,13 @@ class MyBluetoothService : Service() {
                     mTcpClient.let {
                         it?.sendImgBytes(jpegBitmap)
                     }
-                    condition.await()
+                    imgReceivedByServer.await()
                 }
                 lock.withLock {
                     mTcpClient.let {
                         it?.sendMpuBytes(mpuData)
                     }
-                    condition.await()
+                    mpuDataReceivedByServer.await()
                 }
                 TimeUnit.MILLISECONDS.sleep(200)
             }
@@ -235,9 +237,13 @@ class MyBluetoothService : Service() {
         override fun run() {
             mTcpClient = TcpClient(object : TcpClient.OnMessageReceived {
                 override fun messageReceived(message: String?) {
-                    if (message.equals("IMG_RECV") || message.equals("MPU_RECV")) {
+                    if (message.equals("IMG_RECV")) {
                         lock.withLock {
-                            condition.signalAll()
+                            imgReceivedByServer.signalAll()
+                        }
+                    } else if (message.equals("MPU_RECV")){
+                        lock.withLock {
+                            mpuDataReceivedByServer.signalAll()
                         }
                     }
                 }
