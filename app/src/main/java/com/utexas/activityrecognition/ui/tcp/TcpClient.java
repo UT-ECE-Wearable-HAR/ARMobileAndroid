@@ -12,6 +12,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class TcpClient {
     private static final String TAG = TcpClient.class.getCanonicalName();
@@ -55,7 +56,7 @@ public class TcpClient {
      */
     public void sendImgBytes(byte[] img) {
         try {
-            Log.e(TAG, "Sending: " + img.length + "bytes");
+            Log.e(TAG, "Sending: " + img.length + " img bytes");
             if(mOutputStream != null) {
                 ByteBuffer sizeBytes = ByteBuffer.allocate(4);
                 sizeBytes.putInt(img.length);
@@ -65,7 +66,21 @@ public class TcpClient {
                 Log.e(TAG, "length sent " + img.length);
                 mOutputStream.write(img);
                 mOutputStream.flush();
-                Log.e(TAG, "bytes sent ");
+                Log.e(TAG, "img bytes sent ");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendMpuBytes(byte[] mpuData) { //TODO make it unique from image transmission for the server
+        try {
+            Log.e(TAG, "Sending: " + mpuData.length + " mpu bytes");
+            if(mOutputStream != null) {
+                mOutputStream.write(mpuData);
+                mOutputStream.flush();
+                Log.e(TAG, "mpu bytes sent ");
+                Log.e(TAG, Arrays.toString(mpuData));
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,22 +1,15 @@
 package com.utexas.activityrecognition.ui.bluetooth.connect
 
-import android.annotation.SuppressLint
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.os.Handler
 import android.os.IBinder
-import android.os.Message
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.utexas.activityrecognition.R
 import com.utexas.activityrecognition.ui.tcp.TcpClient
-import kotlinx.coroutines.internal.SynchronizedObject
-import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -128,20 +121,30 @@ class MyBluetoothService : Service() {
         override fun run() {
             while(true) {
                 // Read from the InputStream.
-                val jpegBitmap: ByteArray? = try {
-                    getJpegBytes()
+                val dataBitmaps: ArrayList<ByteArray?>? = try {
+                    getDataBytes()
                 } catch (e: IOException){
                     Log.d(TAG, "Input stream was disconnected", e)
                     stopSelf()
                     break
                 }
 
-                if(jpegBitmap == null){
+                if(dataBitmaps == null || dataBitmaps.size != 2){
                     continue
                 }
+
+                val mpuData = dataBitmaps.get(0)
+                val jpegBitmap = dataBitmaps.get(1)
+
                 lock.withLock {
                     mTcpClient.let {
                         it?.sendImgBytes(jpegBitmap)
+                    }
+                    condition.await()
+                }
+                lock.withLock {
+                    mTcpClient.let {
+                        it?.sendMpuBytes(mpuData)
                     }
                     condition.await()
                 }
@@ -151,7 +154,7 @@ class MyBluetoothService : Service() {
             Log.e(TAG, "Bluetooth Socket closed")
         }
 
-        private fun getJpegBytes(): ByteArray? {
+        private fun getDataBytes(): ArrayList<ByteArray?>? {
 
             val byteMessage: ByteArray = "RCV_READY".toByteArray(Charsets.US_ASCII)
             val byteArrLen: Int = byteMessage.size + 1
@@ -167,10 +170,11 @@ class MyBluetoothService : Service() {
                 stopSelf()
             }
             var numBytes = mmInStream.read(mmBuffer)
-            while (numBytes > 64){
+            while (numBytes > 128 || numBytes < 42){ // TODO fix 42 workaround
                 numBytes = mmInStream.read(mmBuffer)
             }
-            val headerString = String(mmBuffer, Charset.forName("UTF8")).substring(0, numBytes)
+            val mpuData = mmBuffer.asList().subList(0,42).toByteArray()
+            val headerString = String(mmBuffer.asList().subList(42, numBytes).toByteArray(), Charset.forName("UTF8"))
             val size = getJpegLength(headerString)
             if(size == -1){
                 return null
@@ -183,7 +187,10 @@ class MyBluetoothService : Service() {
                 }.asIterable()
                 jpegBytes.addAll(addBytes)
             }
-            return jpegBytes.toByteArray()
+            val toReturn = ArrayList<ByteArray?>()
+            toReturn.add(mpuData)
+            toReturn.add(jpegBytes.toByteArray())
+            return toReturn
         }
 
         private fun getJpegLength(headerString: String): Int{
@@ -228,7 +235,7 @@ class MyBluetoothService : Service() {
         override fun run() {
             mTcpClient = TcpClient(object : TcpClient.OnMessageReceived {
                 override fun messageReceived(message: String?) {
-                    if (message.equals("IMG_RECV")) {
+                    if (message.equals("IMG_RECV") || message.equals("MPU_RECV")) {
                         lock.withLock {
                             condition.signalAll()
                         }
