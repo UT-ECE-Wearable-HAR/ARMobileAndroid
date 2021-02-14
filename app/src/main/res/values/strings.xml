@@ -27,8 +27,8 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
-    <string name="base_url">http://192.168.0.2:8000/</string>
-    <string name="tcp_url">192.168.0.2</string>
+    <string name="base_url">http://har.benbelov.com:8000/</string>
+    <string name="tcp_url">har.benbelov.com</string>
 
     <string name="connect_socket">Connect to Device</string>
     <string name="connecting_socket">Connecting</string>

@@ -1,9 +1,16 @@
 package com.utexas.activityrecognition.ui.main.ui.home;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -13,11 +20,11 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.utexas.activityrecognition.R;
+import com.utexas.activityrecognition.ui.bluetooth.connect.BluetoothServiceKt;
 
 public class HomeFragment extends Fragment {
 
     private HomeViewModel homeViewModel;
-
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         homeViewModel =
@@ -30,6 +37,25 @@ public class HomeFragment extends Fragment {
                 textView.setText(s);
             }
         });
+
+
         return root;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        IntentFilter filter = new IntentFilter(BluetoothServiceKt.ACTION_UPDATE_IMAGE);
+        BroadcastReceiver cameraReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                byte[] byteArray = intent.getByteArrayExtra(BluetoothServiceKt.EXTRA_IMAGE);
+
+                Bitmap camBitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+
+                ((ImageView) view.findViewById(R.id.camera_feed)).setImageBitmap(camBitmap);
+            }
+        };
+        getActivity().registerReceiver(cameraReceiver, filter);
+        super.onViewCreated(view, savedInstanceState);
     }
 }

@@ -109,7 +109,7 @@ public class TcpClient {
         mRun = true;
 
         try {
-            InetAddress serverAddr = InetAddress.getByName("192.168.0.2");
+            InetAddress serverAddr = InetAddress.getByName("har.benbelov.com");
             Socket socket = new Socket(serverAddr, 4444);
 
             try {

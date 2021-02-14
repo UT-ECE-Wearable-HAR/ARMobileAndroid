@@ -4,8 +4,10 @@ import android.app.Service
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
+import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.utexas.activityrecognition.R
@@ -30,6 +32,8 @@ const val MESSAGE_TOAST: Int = 2
 
 const val REQUEST_ENABLE_BT = 5
 
+const val ACTION_UPDATE_IMAGE = "com.utexas.activityrecognition.ACTION_UPDATE_IMAGE"
+const val EXTRA_IMAGE = "com.utexas.activityrecognition.CAM_IMAGE"
 const val BT_NOTIF_ID = 1;
 //Note to change some consts to an uncommitted file since we have a public repo
 val MY_UUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
@@ -37,7 +41,7 @@ const val UTHAR_DEVICE_NAME = "UTHAR_DEVICE"
 lateinit var bluetoothAdapter: BluetoothAdapter
 var isRunning = false
 // ... (Add other message types here as needed.)
-
+lateinit var wakeLock: PowerManager.WakeLock
 class MyBluetoothService : Service() {
 
     override fun onCreate() {
@@ -96,6 +100,11 @@ class MyBluetoothService : Service() {
         connectedThread?.start()
         val attachTCPThread: AttachTCPThread = AttachTCPThread()
         attachTCPThread.start()
+        wakeLock = (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
+            newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ActivityRecognition::RecordingWakeLock").apply {
+                acquire()
+            }
+        }
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -111,6 +120,7 @@ class MyBluetoothService : Service() {
         } catch (e: IOException) {
             Log.e(TAG, "Could not close the connect socket", e)
         }
+        wakeLock.release()
         isRunning = false
         super.onDestroy()
     }
@@ -137,7 +147,9 @@ class MyBluetoothService : Service() {
 
                 val mpuData = dataBitmaps.get(0)
                 val jpegBitmap = dataBitmaps.get(1)
-
+                val broadcastImageIntent = Intent(ACTION_UPDATE_IMAGE)
+                broadcastImageIntent.putExtra(EXTRA_IMAGE, jpegBitmap)
+                sendBroadcast(broadcastImageIntent)
                 lock.withLock {
                     mTcpClient.let {
                         it?.sendImgBytes(jpegBitmap)
@@ -175,7 +187,7 @@ class MyBluetoothService : Service() {
             while (numBytes > 128 || numBytes < 42){ // TODO fix 42 workaround
                 numBytes = mmInStream.read(mmBuffer)
             }
-            val mpuData = mmBuffer.asList().subList(0,42).toByteArray()
+            val mpuData = mmBuffer.asList().subList(0, 42).toByteArray()
             val headerString = String(mmBuffer.asList().subList(42, numBytes).toByteArray(), Charset.forName("UTF8"))
             val size = getJpegLength(headerString)
             if(size == -1){
@@ -241,7 +253,7 @@ class MyBluetoothService : Service() {
                         lock.withLock {
                             imgReceivedByServer.signalAll()
                         }
-                    } else if (message.equals("MPU_RECV")){
+                    } else if (message.equals("MPU_RECV")) {
                         lock.withLock {
                             mpuDataReceivedByServer.signalAll()
                         }
