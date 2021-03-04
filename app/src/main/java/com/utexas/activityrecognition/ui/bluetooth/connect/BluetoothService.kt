@@ -35,6 +35,8 @@ const val REQUEST_ENABLE_BT = 5
 const val ACTION_UPDATE_IMAGE = "com.utexas.activityrecognition.ACTION_UPDATE_IMAGE"
 const val EXTRA_IMAGE = "com.utexas.activityrecognition.CAM_IMAGE"
 const val BT_NOTIF_ID = 1;
+
+const val MPU_HEADER_SIZE = 420
 //Note to change some consts to an uncommitted file since we have a public repo
 val MY_UUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
 const val UTHAR_DEVICE_NAME = "UTHAR_DEVICE"
@@ -184,11 +186,11 @@ class MyBluetoothService : Service() {
                 stopSelf()
             }
             var numBytes = mmInStream.read(mmBuffer)
-            while (numBytes > 128 || numBytes < 42){ // TODO fix 42 workaround
+            while (numBytes < MPU_HEADER_SIZE){
                 numBytes = mmInStream.read(mmBuffer)
             }
-            val mpuData = mmBuffer.asList().subList(0, 42).toByteArray()
-            val headerString = String(mmBuffer.asList().subList(42, numBytes).toByteArray(), Charset.forName("UTF8"))
+            val mpuData = mmBuffer.asList().subList(0, MPU_HEADER_SIZE).toByteArray()
+            val headerString = String(mmBuffer.asList().subList(MPU_HEADER_SIZE, numBytes).toByteArray(), Charset.forName("UTF8"))
             val size = getJpegLength(headerString)
             if(size == -1){
                 return null
