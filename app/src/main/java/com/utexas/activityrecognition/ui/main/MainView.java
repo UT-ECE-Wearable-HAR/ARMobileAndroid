@@ -1,15 +1,20 @@
 package com.utexas.activityrecognition.ui.main;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -59,10 +64,12 @@ public class MainView extends AppCompatActivity {
         return true;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()){
             case R.id.menu_connect:
+                MyBluetoothService.Companion.setDebugHandler(new DebugHandler());
                 RecogitionAPIImpl.getInstance().ConnectImgSocket(this);
                 Intent connectWearable = new Intent(this, MyBluetoothService.class);
                 startForegroundService(connectWearable);
@@ -73,6 +80,14 @@ public class MainView extends AppCompatActivity {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    class DebugHandler extends Handler {
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            TextView debugText = (TextView) (MainView.this.findViewById(R.id.debugText));
+            debugText.setText((String) msg.obj);
         }
     }
 }

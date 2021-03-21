@@ -6,7 +6,9 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.content.Intent
+import android.os.Handler
 import android.os.IBinder
+import android.os.Message
 import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -34,17 +36,24 @@ const val REQUEST_ENABLE_BT = 5
 
 const val ACTION_UPDATE_IMAGE = "com.utexas.activityrecognition.ACTION_UPDATE_IMAGE"
 const val EXTRA_IMAGE = "com.utexas.activityrecognition.CAM_IMAGE"
-const val BT_NOTIF_ID = 1;
+const val BT_NOTIF_ID = 1
 
 const val MPU_HEADER_SIZE = 420
 //Note to change some consts to an uncommitted file since we have a public repo
 val MY_UUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
 const val UTHAR_DEVICE_NAME = "UTHAR_DEVICE"
 lateinit var bluetoothAdapter: BluetoothAdapter
+lateinit var debugHandler: Handler
 var isRunning = false
 // ... (Add other message types here as needed.)
 lateinit var wakeLock: PowerManager.WakeLock
 class MyBluetoothService : Service() {
+
+    companion object {
+        fun setDebugHandler(handler: Handler) {
+            debugHandler = handler
+        }
+    }
 
     override fun onCreate() {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
@@ -79,13 +88,13 @@ class MyBluetoothService : Service() {
         }
     }
 
-    private var mTcpClient:TcpClient? = null;
+    private var mTcpClient:TcpClient? = null
     private val lock = ReentrantLock()
     private val imgReceivedByServer = lock.newCondition()
     private val mpuDataReceivedByServer = lock.newCondition()
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        var builder = NotificationCompat.Builder(this, getString(R.string.channel_id))
+        val builder = NotificationCompat.Builder(this, getString(R.string.channel_id))
                 .setSmallIcon(R.drawable.ic_notifications_black_24dp)
                 .setContentTitle("UT Activity Recognition")
                 .setContentText("Bluetooth Connected")
@@ -100,7 +109,7 @@ class MyBluetoothService : Service() {
         connectThread?.join()
         val connectedThread: ConnectedBluetoothThread? = socket?.let { ConnectedBluetoothThread(it) }
         connectedThread?.start()
-        val attachTCPThread: AttachTCPThread = AttachTCPThread()
+        val attachTCPThread = AttachTCPThread()
         attachTCPThread.start()
         wakeLock = (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
             newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ActivityRecognition::RecordingWakeLock").apply {
@@ -152,12 +161,18 @@ class MyBluetoothService : Service() {
                 val broadcastImageIntent = Intent(ACTION_UPDATE_IMAGE)
                 broadcastImageIntent.putExtra(EXTRA_IMAGE, jpegBitmap)
                 sendBroadcast(broadcastImageIntent)
+                val message:Message = Message.obtain()
+                message.obj = "SENDING IMAGE"
+                debugHandler.sendMessage(message)
                 lock.withLock {
                     mTcpClient.let {
                         it?.sendImgBytes(jpegBitmap)
                     }
                     imgReceivedByServer.await()
                 }
+                val message2:Message = Message.obtain()
+                message2.obj = "SENDING MPU DATA"
+                debugHandler.sendMessage(message2)
                 lock.withLock {
                     mTcpClient.let {
                         it?.sendMpuBytes(mpuData)
@@ -174,17 +189,23 @@ class MyBluetoothService : Service() {
 
             val byteMessage: ByteArray = "RCV_READY".toByteArray(Charsets.US_ASCII)
             val byteArrLen: Int = byteMessage.size + 1
-            val byteArrToSend: ByteArray = ByteArray(byteArrLen)
+            val byteArrToSend = ByteArray(byteArrLen)
+            val message: Message = Message.obtain()
             for(i in byteMessage.indices){
                 byteArrToSend[i] = byteMessage[i]
             }
             byteArrToSend[byteArrLen - 1] = 0
+            message.obj = "SENDING RCV_READY"
+            debugHandler.sendMessage(message)
             try {
                 mmOutStream.write(byteArrToSend)
             } catch (e: Exception) {
                 e.message?.let { Log.e(TAG, it) }
                 stopSelf()
             }
+            val message2: Message = Message.obtain()
+            message2.obj = "READING HEADER"
+            debugHandler.sendMessage(message2)
             var numBytes = mmInStream.read(mmBuffer)
             while (numBytes < MPU_HEADER_SIZE){
                 numBytes = mmInStream.read(mmBuffer)
@@ -195,10 +216,13 @@ class MyBluetoothService : Service() {
             if(size == -1){
                 return null
             }
-            val jpegBytes = ArrayList<Byte>()
+            val jpegBytes = ArrayList<Byte>(39600)
+            val message3: Message = Message.obtain()
+            message3.obj = "RECEIVING BT IMAGE/DATA"
+            debugHandler.sendMessage(message3)
             while(jpegBytes.size < size){
                 numBytes = mmInStream.read(mmBuffer)
-                var addBytes = mmBuffer.filterIndexed { index, _ ->
+                val addBytes = mmBuffer.filterIndexed { index, _ ->
                     index < numBytes
                 }.asIterable()
                 jpegBytes.addAll(addBytes)
