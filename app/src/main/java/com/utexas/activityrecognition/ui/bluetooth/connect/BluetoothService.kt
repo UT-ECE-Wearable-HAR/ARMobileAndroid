@@ -144,7 +144,7 @@ class MyBluetoothService : Service() {
         override fun run() {
             while(true) {
                 // Read from the InputStream.
-                val dataBitmaps: ArrayList<ByteArray?>? = try {
+                val dataBitmaps: ArrayList<Any?>? = try {
                     getDataBytes()
                 } catch (e: IOException){
                     Log.d(TAG, "Input stream was disconnected", e)
@@ -152,12 +152,13 @@ class MyBluetoothService : Service() {
                     break
                 }
 
-                if(dataBitmaps == null || dataBitmaps.size != 2){
+                if(dataBitmaps == null || dataBitmaps.size != 3){
                     continue
                 }
 
-                val mpuData = dataBitmaps.get(0)
-                val jpegBitmap = dataBitmaps.get(1)
+                val mpuData: ByteArray? = dataBitmaps[0] as ByteArray?
+                val jpegBitmap: ByteArray? = dataBitmaps[1] as ByteArray?
+                val jpegSize: Int = dataBitmaps[2] as Int
                 val broadcastImageIntent = Intent(ACTION_UPDATE_IMAGE)
                 broadcastImageIntent.putExtra(EXTRA_IMAGE, jpegBitmap)
                 sendBroadcast(broadcastImageIntent)
@@ -166,7 +167,7 @@ class MyBluetoothService : Service() {
                 debugHandler.sendMessage(message)
                 lock.withLock {
                     mTcpClient.let {
-                        it?.sendImgBytes(jpegBitmap)
+                        it?.sendImgBytes(jpegBitmap, jpegSize)
                     }
                     imgReceivedByServer.await()
                 }
@@ -179,13 +180,12 @@ class MyBluetoothService : Service() {
                     }
                     mpuDataReceivedByServer.await()
                 }
-                TimeUnit.MILLISECONDS.sleep(200)
             }
             stopSelf()
             Log.e(TAG, "Bluetooth Socket closed")
         }
 
-        private fun getDataBytes(): ArrayList<ByteArray?>? {
+        private fun getDataBytes(): ArrayList<Any?>? {
 
             val byteMessage: ByteArray = "RCV_READY".toByteArray(Charsets.US_ASCII)
             val byteArrLen: Int = byteMessage.size + 1
@@ -216,20 +216,21 @@ class MyBluetoothService : Service() {
             if(size == -1){
                 return null
             }
-            val jpegBytes = ArrayList<Byte>(39600)
+            val jpegBytesArr = ByteArray(39600)
+            var idx = 0
             val message3: Message = Message.obtain()
             message3.obj = "RECEIVING BT IMAGE/DATA"
             debugHandler.sendMessage(message3)
-            while(jpegBytes.size < size){
-                numBytes = mmInStream.read(mmBuffer)
-                val addBytes = mmBuffer.filterIndexed { index, _ ->
-                    index < numBytes
-                }.asIterable()
-                jpegBytes.addAll(addBytes)
+            while(idx < size){
+                val message4: Message = Message.obtain()
+                message4.obj = "READING BT IMAGE/DATA"
+                debugHandler.sendMessage(message4)
+                idx += mmInStream.read(jpegBytesArr, idx, 1024)
             }
-            val toReturn = ArrayList<ByteArray?>()
+            val toReturn = ArrayList<Any?>()
             toReturn.add(mpuData)
-            toReturn.add(jpegBytes.toByteArray())
+            toReturn.add(jpegBytesArr)
+            toReturn.add(idx)
             return toReturn
         }
 

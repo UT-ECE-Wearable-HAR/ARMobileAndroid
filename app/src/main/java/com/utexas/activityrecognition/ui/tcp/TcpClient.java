@@ -54,17 +54,17 @@ public class TcpClient {
      *
      * @param img bytes
      */
-    public void sendImgBytes(byte[] img) {
+    public void sendImgBytes(byte[] img, int size) {
         try {
-            Log.e(TAG, "Sending: " + img.length + " img bytes");
+            Log.e(TAG, "Sending: " + size + " img bytes");
             if(mOutputStream != null) {
                 ByteBuffer sizeBytes = ByteBuffer.allocate(4);
-                sizeBytes.putInt(img.length);
+                sizeBytes.putInt(size);
                 byte[] sizeBytesArray = sizeBytes.array();
                 mOutputStream.write(sizeBytesArray);
                 mOutputStream.flush();
-                Log.e(TAG, "length sent " + img.length);
-                mOutputStream.write(img);
+                Log.e(TAG, "length sent " + size);
+                mOutputStream.write(img, 0, size);
                 mOutputStream.flush();
                 Log.e(TAG, "img bytes sent ");
             }
