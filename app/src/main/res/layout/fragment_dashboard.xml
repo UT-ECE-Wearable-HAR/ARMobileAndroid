@@ -22,20 +22,20 @@
         android:gravity="center_horizontal" />
 
     <Button
-        android:id="@+id/refreshInferencesButton"
+        android:id="@+id/refreshSessionsButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="112dp"
         android:layout_marginLeft="112dp"
         android:layout_marginEnd="112dp"
         android:layout_marginRight="112dp"
-        android:text="@string/refresh_activities"
+        android:text="@string/refresh"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/inferencesListView"
+        android:id="@+id/sessionsListView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginBottom="50dp"
@@ -44,5 +44,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/refreshInferencesButton" />
+        app:layout_constraintTop_toBottomOf="@+id/refreshSessionsButton" />
 </androidx.constraintlayout.widget.ConstraintLayout>

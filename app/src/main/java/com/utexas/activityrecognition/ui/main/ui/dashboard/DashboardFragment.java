@@ -29,15 +29,15 @@ public class DashboardFragment extends Fragment {
                 new ViewModelProvider(this).get(DashboardViewModel.class);
         View root = inflater.inflate(R.layout.fragment_dashboard, container, false);
         final TextView textView = root.findViewById(R.id.text_dashboard);
-        final RecyclerView inferencesList = root.findViewById(R.id.inferencesListView);
-        final Button refreshButton = root.findViewById(R.id.refreshInferencesButton);
+        final RecyclerView sessionsList = root.findViewById(R.id.sessionsListView);
+        final Button refreshButton = root.findViewById(R.id.refreshSessionsButton);
         dashboardViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);
             }
         });
-        populateInferencesList(inferencesList);
+        populateSessionsList(sessionsList);
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -47,10 +47,15 @@ public class DashboardFragment extends Fragment {
         return root;
     }
 
-    public void populateInferencesList(RecyclerView inferencesList){
-        String[] demoNames = {"Activity 1", "Activity 2", "Activity 3", "Activity 4", "Activity 5"};
+    public void populateSessionsList(RecyclerView sessionsList){
+        int[] demoIds = {1,2,3,4,5};
         Date[] demoTimestamps = {new Date(1618360856000L), new Date(1618361756000L), new Date(1618363256000L), new Date(1618363856000L), new Date(1618364276000L)};
         int[] demoImgs = {R.drawable.studying, R.drawable.napping, R.drawable.computer, R.drawable.typing, R.drawable.chores};
+
+        String[] demoNames = new String[demoIds.length];
+        for(int i = 0; i < demoIds.length; i++){
+            demoNames[i] = "Session " + demoIds[i];
+        }
 
         String[] demoTimestampStrings = new String[demoTimestamps.length];
         for(int i = 0; i < demoTimestampStrings.length; i ++){
@@ -59,14 +64,14 @@ public class DashboardFragment extends Fragment {
             demoTimestampStrings[i] = dateParts[0] + ":" + dateParts[1];;
         }
 
-        InferencesListAdapter adapter = new InferencesListAdapter(this.getActivity(), demoNames, demoTimestampStrings, demoImgs);
-        inferencesList.setAdapter(adapter);
-        inferencesList.setLayoutManager(new LinearLayoutManager(this.getActivity()));
+        SessionsListAdapter adapter = new SessionsListAdapter(this.getActivity(), demoNames, demoTimestampStrings, demoImgs);
+        sessionsList.setAdapter(adapter);
+        sessionsList.setLayoutManager(new LinearLayoutManager(this.getActivity()));
 
     }
 
     public void onClickRefresh(){
-        RecyclerView inferencesList = (RecyclerView) getView().findViewById(R.id.inferencesListView);
-        inferencesList.setVisibility(View.VISIBLE);
+        RecyclerView sessionsList = (RecyclerView) getView().findViewById(R.id.sessionsListView);
+        sessionsList.setVisibility(View.VISIBLE);
     }
 }

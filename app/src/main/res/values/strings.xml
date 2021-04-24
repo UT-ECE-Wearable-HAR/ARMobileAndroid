@@ -40,5 +40,7 @@
     <string name="channel_name">ActivityRecognitionNotifications</string>
     <string name="channel_description">Tracks Bluetooth Connection</string>
     <string name="channel_id">ActivityRecognition</string>
-    <string name="refresh_activities">Refresh Activities</string>
+    <string name="refresh">Refresh</string>
+    <string name="session">Session</string>
+    <string name="timestamp">timestamp</string>
 </resources>
