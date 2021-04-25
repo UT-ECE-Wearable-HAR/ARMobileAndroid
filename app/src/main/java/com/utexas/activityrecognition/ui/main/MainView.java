@@ -5,7 +5,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -25,7 +24,6 @@ import com.utexas.activityrecognition.R;
 import com.utexas.activityrecognition.api.impl.RecogitionAPIImpl;
 import com.utexas.activityrecognition.ui.bluetooth.connect.BluetoothServiceKt;
 import com.utexas.activityrecognition.ui.bluetooth.connect.MyBluetoothService;
-import com.utexas.activityrecognition.ui.tcp.TcpClient;
 
 public class MainView extends AppCompatActivity {
     private static final String TAG = MainView.class.getCanonicalName();
@@ -70,7 +68,7 @@ public class MainView extends AppCompatActivity {
         switch (item.getItemId()){
             case R.id.menu_connect:
                 MyBluetoothService.Companion.setDebugHandler(new DebugHandler());
-                RecogitionAPIImpl.getInstance().ConnectImgSocket(this);
+                RecogitionAPIImpl.getInstance().connectImgSocket(this);
                 Intent connectWearable = new Intent(this, MyBluetoothService.class);
                 startForegroundService(connectWearable);
                 return true;

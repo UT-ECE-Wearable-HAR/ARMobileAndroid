@@ -15,7 +15,7 @@ import java.io.IOException;
 public class LoginDataSource {
 
     public Result<LoggedInUser> login(Context context, String username, String password) {
-        if(RecogitionAPIImpl.getInstance().Login(context, username, password)) {
+        if(RecogitionAPIImpl.getInstance().login(context, username, password)) {
             return new Result.Success<>(new LoggedInUser(username));
         } else {
             return new Result.Error(new IOException("Error logging in"));
@@ -24,7 +24,7 @@ public class LoginDataSource {
 
     public Result<LoggedInUser> register(Context context, String email, String username, String password) {
         try {
-            if (RecogitionAPIImpl.getInstance().Register(context, email, username, password)) {
+            if (RecogitionAPIImpl.getInstance().register(context, email, username, password)) {
                 return new Result.Success<>(new LoggedInUser(username));
             } else {
                 return new Result.Error(new RegistrationException(R.string.register_failed));
@@ -35,7 +35,7 @@ public class LoginDataSource {
     }
 
     public void logout(Context context) {
-        if(RecogitionAPIImpl.getInstance().Logout(context)) {
+        if(RecogitionAPIImpl.getInstance().logout(context)) {
             return;
         } else {
             return;

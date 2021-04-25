@@ -64,7 +64,7 @@ public class DashboardFragment extends Fragment {
             demoTimestampStrings[i] = dateParts[0] + ":" + dateParts[1];;
         }
 
-        SessionsListAdapter adapter = new SessionsListAdapter(this.getActivity(), demoNames, demoTimestampStrings, demoImgs);
+        SessionsListAdapter adapter = new SessionsListAdapter(this.getActivity(), demoIds, demoNames, demoTimestampStrings, demoImgs);
         sessionsList.setAdapter(adapter);
         sessionsList.setLayoutManager(new LinearLayoutManager(this.getActivity()));
 
