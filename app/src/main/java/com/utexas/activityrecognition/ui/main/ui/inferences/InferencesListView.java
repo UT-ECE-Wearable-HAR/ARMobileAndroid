@@ -27,13 +27,12 @@ public class InferencesListView extends AppCompatActivity {
 
     public void populateInferencesList(RecyclerView inferencesList){
         ArrayList<Inference> inferences = getIntent().getParcelableArrayListExtra(INFERENCES_LIST);
-        int[] demoIds = {1,2,3,4,5};
         Date[] demoTimestamps = {new Date(1618360856000L), new Date(1618361756000L), new Date(1618363256000L), new Date(1618363856000L), new Date(1618364276000L)};
         int[] demoImgs = {R.drawable.studying, R.drawable.napping, R.drawable.computer, R.drawable.typing, R.drawable.chores};
 
-        String[] demoNames = new String[demoIds.length];
-        for(int i = 0; i < demoIds.length; i++){
-            demoNames[i] = "Session " + demoIds[i];
+        String[] demoNames = new String[demoImgs.length];
+        for(int i = 0; i < demoImgs.length; i++){
+            demoNames[i] = "Inference " + i;
         }
 
         String[] demoTimestampStrings = new String[demoTimestamps.length];
@@ -43,7 +42,7 @@ public class InferencesListView extends AppCompatActivity {
             demoTimestampStrings[i] = dateParts[0] + ":" + dateParts[1];;
         }
 
-        InferencesListAdapter adapter = new InferencesListAdapter(this, demoIds, demoNames, demoTimestampStrings, demoImgs);
+        InferencesListAdapter adapter = new InferencesListAdapter(this, demoNames, demoTimestampStrings, demoImgs);
         inferencesList.setAdapter(adapter);
         inferencesList.setLayoutManager(new LinearLayoutManager(this));
 

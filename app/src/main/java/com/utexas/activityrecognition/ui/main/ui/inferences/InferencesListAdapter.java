@@ -17,12 +17,10 @@ public class InferencesListAdapter extends RecyclerView.Adapter<InferencesListAd
 
     String[] names, timestamps;
     int[] imgs;
-    int[] ids;
     Context context;
 
-    public InferencesListAdapter(Context ct, int[] ids, String[] names, String[] timestamps, int[] imgs){
+    public InferencesListAdapter(Context ct, String[] names, String[] timestamps, int[] imgs){
         context = ct;
-        this.ids = ids;
         this.names = names;
         this.timestamps = timestamps;
         this.imgs = imgs;
@@ -41,7 +39,6 @@ public class InferencesListAdapter extends RecyclerView.Adapter<InferencesListAd
         holder.sessionName.setText(names[position]);
         holder.timestamp.setText(timestamps[position]);
         holder.image.setImageResource(imgs[position]);
-        holder.sessionId = ids[position];
         holder.itemView.setOnClickListener((View v)-> {
             Toast.makeText(v.getContext(), position + "", Toast.LENGTH_SHORT).show();
         });
@@ -56,7 +53,6 @@ public class InferencesListAdapter extends RecyclerView.Adapter<InferencesListAd
 
         TextView sessionName, timestamp;
         ImageView image;
-        int sessionId;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
