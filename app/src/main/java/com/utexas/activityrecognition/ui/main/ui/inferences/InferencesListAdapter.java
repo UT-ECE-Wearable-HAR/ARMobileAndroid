@@ -30,13 +30,13 @@ public class InferencesListAdapter extends RecyclerView.Adapter<InferencesListAd
     @Override
     public InferencesListAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
-        View view = inflater.inflate(R.layout.sessions_list_row, parent, false);
+        View view = inflater.inflate(R.layout.inferences_list_row, parent, false);
         return new MyViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull InferencesListAdapter.MyViewHolder holder, int position) {
-        holder.sessionName.setText(names[position]);
+        holder.inferenceName.setText(names[position]);
         holder.timestamp.setText(timestamps[position]);
         holder.image.setImageResource(imgs[position]);
         holder.itemView.setOnClickListener((View v)-> {
@@ -51,12 +51,12 @@ public class InferencesListAdapter extends RecyclerView.Adapter<InferencesListAd
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
-        TextView sessionName, timestamp;
+        TextView inferenceName, timestamp;
         ImageView image;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
-            sessionName = itemView.findViewById(R.id.sessionNameText);
+            inferenceName = itemView.findViewById(R.id.inferenceNameText);
             timestamp = itemView.findViewById(R.id.timestampText);
             image = itemView.findViewById(R.id.framePreviewImage);
         }

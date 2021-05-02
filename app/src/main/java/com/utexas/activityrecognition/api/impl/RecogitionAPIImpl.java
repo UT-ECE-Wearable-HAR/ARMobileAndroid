@@ -10,6 +10,10 @@ import com.utexas.activityrecognition.data.error.RegistrationException;
 import com.utexas.activityrecognition.data.model.Inference;
 import com.utexas.activityrecognition.data.model.Session;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.CookieStore;
@@ -107,6 +111,33 @@ public class RecogitionAPIImpl implements RecognitionAPI {
     @Override
     public ArrayList<Inference> getInferences(Context context, int sessionId) {
         return null;
+    }
+
+    @Override
+    public byte[] getImgs(Context context, ArrayList<Integer> imgIds) throws JSONException {
+        CallerThread callerThread = new CallerThread(context);
+        JSONArray arr = new JSONArray();
+        for (Integer id: imgIds) {
+            arr.put(id);
+        }
+        JSONObject body = new JSONObject();
+        body.put("imgIds", arr);
+        callerThread.setResponseBody(body.toString());
+        callerThread.setURL(context.getResources().getString(R.string.base_url)
+            + context.getResources().getString(R.string.api_getimgs));
+        try {
+            callerThread.start();
+            callerThread.join();
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+            return new byte[0];
+        }
+        if(callerThread.getResult()){
+            String responseString = callerThread.responseBody.replaceAll("\n", "\\n");
+            JSONObject response = new JSONObject(responseString);
+            return (byte[]) response.get("imgs");
+        }
+        return new byte[0];
     }
 
 

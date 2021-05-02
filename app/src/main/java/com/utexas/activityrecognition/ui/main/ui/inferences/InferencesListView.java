@@ -32,7 +32,7 @@ public class InferencesListView extends AppCompatActivity {
 
         String[] demoNames = new String[demoImgs.length];
         for(int i = 0; i < demoImgs.length; i++){
-            demoNames[i] = "Inference " + i;
+            demoNames[i] = "Activity " + i;
         }
 
         String[] demoTimestampStrings = new String[demoTimestamps.length];

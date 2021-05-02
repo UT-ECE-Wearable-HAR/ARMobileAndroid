@@ -2,7 +2,6 @@ package com.utexas.activityrecognition.ui.main.ui.dashboard;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,7 +46,7 @@ public class SessionsListAdapter extends RecyclerView.Adapter<SessionsListAdapte
         holder.image.setImageResource(imgs[position]);
         holder.sessionId = ids[position];
         holder.itemView.setOnClickListener((View v)-> {
-            Toast.makeText(v.getContext(), position + "", Toast.LENGTH_SHORT).show();
+            Toast.makeText(v.getContext(), ids[position] + "", Toast.LENGTH_SHORT).show();
             Intent showInferences = new Intent(v.getContext(), InferencesListView.class);
             showInferences.putParcelableArrayListExtra(InferencesListView.INFERENCES_LIST, RecogitionAPIImpl.getInstance().getInferences(v.getContext(), ids[position]));
             v.getContext().startActivity(showInferences);

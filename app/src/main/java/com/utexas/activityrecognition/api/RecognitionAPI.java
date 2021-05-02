@@ -6,6 +6,8 @@ import com.utexas.activityrecognition.data.error.RegistrationException;
 import com.utexas.activityrecognition.data.model.Inference;
 import com.utexas.activityrecognition.data.model.Session;
 
+import org.json.JSONException;
+
 import java.util.ArrayList;
 
 
@@ -16,5 +18,6 @@ public interface RecognitionAPI {
     boolean connectImgSocket(Context context);
     ArrayList<Session> getSessions(Context context);
     ArrayList<Inference> getInferences(Context context, int sessionId);
+    byte[] getImgs(Context context, ArrayList<Integer> imgIds) throws JSONException;
 
 }
