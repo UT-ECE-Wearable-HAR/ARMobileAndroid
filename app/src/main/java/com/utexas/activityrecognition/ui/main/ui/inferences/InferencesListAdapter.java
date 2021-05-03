@@ -12,18 +12,18 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.utexas.activityrecognition.R;
+import com.utexas.activityrecognition.data.model.Inference;
 
 public class InferencesListAdapter extends RecyclerView.Adapter<InferencesListAdapter.MyViewHolder> {
 
-    String[] names, timestamps;
-    int[] imgs;
+    String[] names;
+    Inference[] inferences;
     Context context;
 
-    public InferencesListAdapter(Context ct, String[] names, String[] timestamps, int[] imgs){
+    public InferencesListAdapter(Context ct, String[] names, Inference[] inferences){
         context = ct;
         this.names = names;
-        this.timestamps = timestamps;
-        this.imgs = imgs;
+        this.inferences = inferences;
     }
 
     @NonNull
@@ -37,16 +37,16 @@ public class InferencesListAdapter extends RecyclerView.Adapter<InferencesListAd
     @Override
     public void onBindViewHolder(@NonNull InferencesListAdapter.MyViewHolder holder, int position) {
         holder.inferenceName.setText(names[position]);
-        holder.timestamp.setText(timestamps[position]);
-        holder.image.setImageResource(imgs[position]);
+        holder.timestamp.setText(inferences[position].getStartTimeString());
+        holder.image.setImageBitmap(inferences[position].getImgBitmap());
         holder.itemView.setOnClickListener((View v)-> {
-            Toast.makeText(v.getContext(), position + "", Toast.LENGTH_SHORT).show();
+            Toast.makeText(v.getContext(), inferences[position].getId() + "", Toast.LENGTH_SHORT).show();
         });
     }
 
     @Override
     public int getItemCount() {
-        return names.length;
+        return inferences.length;
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {

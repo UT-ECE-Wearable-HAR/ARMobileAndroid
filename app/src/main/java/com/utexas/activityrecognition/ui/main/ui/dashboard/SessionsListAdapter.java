@@ -13,22 +13,17 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.utexas.activityrecognition.R;
-import com.utexas.activityrecognition.api.impl.RecogitionAPIImpl;
+import com.utexas.activityrecognition.data.model.Session;
 import com.utexas.activityrecognition.ui.main.ui.inferences.InferencesListView;
 
 public class SessionsListAdapter extends RecyclerView.Adapter<SessionsListAdapter.MyViewHolder> {
 
-    String[] names, timestamps;
-    int[] imgs;
-    int[] ids;
     Context context;
+    Session[] sessions;
 
-    public SessionsListAdapter(Context ct, int[] ids, String[] names, String[] timestamps, int[] imgs){
+    public SessionsListAdapter(Context ct, Session[] sessions){
         context = ct;
-        this.ids = ids;
-        this.names = names;
-        this.timestamps = timestamps;
-        this.imgs = imgs;
+        this.sessions = sessions;
     }
 
     @NonNull
@@ -41,28 +36,27 @@ public class SessionsListAdapter extends RecyclerView.Adapter<SessionsListAdapte
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-        holder.sessionName.setText(names[position]);
-        holder.timestamp.setText(timestamps[position]);
-        holder.image.setImageResource(imgs[position]);
-        holder.sessionId = ids[position];
+        String sessionName = "Session " + sessions[position].getId();
+        holder.sessionName.setText(sessionName);
+        holder.timestamp.setText(sessions[position].getStartTimeString());
+        holder.image.setImageBitmap(sessions[position].getImgBitmap());
         holder.itemView.setOnClickListener((View v)-> {
-            Toast.makeText(v.getContext(), ids[position] + "", Toast.LENGTH_SHORT).show();
+            Toast.makeText(v.getContext(), sessions[position].getId() + "", Toast.LENGTH_SHORT).show();
             Intent showInferences = new Intent(v.getContext(), InferencesListView.class);
-            showInferences.putParcelableArrayListExtra(InferencesListView.INFERENCES_LIST, RecogitionAPIImpl.getInstance().getInferences(v.getContext(), ids[position]));
+            showInferences.putExtra(InferencesListView.INFERENCES_LIST, sessions[position].getInferences());
             v.getContext().startActivity(showInferences);
         });
     }
 
     @Override
     public int getItemCount() {
-        return names.length;
+        return sessions.length;
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
         TextView sessionName, timestamp;
         ImageView image;
-        int sessionId;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);

@@ -24,6 +24,7 @@
     <string name="api_register">api/register/</string>
     <string name="api_connect">api/connect/</string>
     <string name="api_getimgs">api/getimgs/</string>
+    <string name="api_gettimestamps">api/gettimestamps/</string>
 
     <string name="title_activity_main_view">MainActivity</string>
     <string name="title_home">Home</string>

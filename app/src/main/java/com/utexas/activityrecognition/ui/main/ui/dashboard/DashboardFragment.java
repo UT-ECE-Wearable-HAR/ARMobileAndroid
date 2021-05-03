@@ -16,8 +16,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.utexas.activityrecognition.R;
+import com.utexas.activityrecognition.api.impl.RecogitionAPIImpl;
+import com.utexas.activityrecognition.data.model.Session;
 
-import java.util.Date;
+import org.json.JSONException;
 
 public class DashboardFragment extends Fragment {
 
@@ -41,37 +43,31 @@ public class DashboardFragment extends Fragment {
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                onClickRefresh();
+                try {
+                    onClickRefresh();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         });
         return root;
     }
 
     public void populateSessionsList(RecyclerView sessionsList){
-        int[] demoIds = {1,2,3,4,5};
-        Date[] demoTimestamps = {new Date(1618360856000L), new Date(1618361756000L), new Date(1618363256000L), new Date(1618363856000L), new Date(1618364276000L)};
-        int[] demoImgs = {R.drawable.studying, R.drawable.napping, R.drawable.computer, R.drawable.typing, R.drawable.chores};
+//        int[] sessionIds = {0,1,2,3,4};
+//        Date[] sessionTimestamps = {new Date(1618360856000L), new Date(1618361756000L), new Date(1618363256000L), new Date(1618363856000L), new Date(1618364276000L)};
+//        int[] sessionImgs = {R.drawable.studying, R.drawable.napping, R.drawable.computer, R.drawable.typing, R.drawable.chores};
 
-        String[] demoNames = new String[demoIds.length];
-        for(int i = 0; i < demoIds.length; i++){
-            demoNames[i] = "Session " + demoIds[i];
-        }
-
-        String[] demoTimestampStrings = new String[demoTimestamps.length];
-        for(int i = 0; i < demoTimestampStrings.length; i ++){
-            String d = demoTimestamps[i].toString();
-            String[] dateParts = d.split(":");
-            demoTimestampStrings[i] = dateParts[0] + ":" + dateParts[1];;
-        }
-
-        SessionsListAdapter adapter = new SessionsListAdapter(this.getActivity(), demoIds, demoNames, demoTimestampStrings, demoImgs);
+        SessionsListAdapter adapter = new SessionsListAdapter(this.getActivity(), Session.getAllSessions(getContext()));
         sessionsList.setAdapter(adapter);
         sessionsList.setLayoutManager(new LinearLayoutManager(this.getActivity()));
 
     }
 
-    public void onClickRefresh(){
+    public void onClickRefresh() throws JSONException {
+        //TODO add some loading symbol to UI
+        Session.saveSession(getContext(), RecogitionAPIImpl.getInstance().getSession(getContext()));
         RecyclerView sessionsList = (RecyclerView) getView().findViewById(R.id.sessionsListView);
-        sessionsList.setVisibility(View.VISIBLE);
+        populateSessionsList(sessionsList);
     }
 }

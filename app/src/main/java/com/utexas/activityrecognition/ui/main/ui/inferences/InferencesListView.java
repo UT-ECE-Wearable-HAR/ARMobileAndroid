@@ -1,7 +1,9 @@
 package com.utexas.activityrecognition.ui.main.ui.inferences;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.TextView;
+import android.os.Parcelable;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -10,8 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.utexas.activityrecognition.R;
 import com.utexas.activityrecognition.data.model.Inference;
 
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.Arrays;
 
 public class InferencesListView extends AppCompatActivity {
 
@@ -26,23 +27,22 @@ public class InferencesListView extends AppCompatActivity {
     }
 
     public void populateInferencesList(RecyclerView inferencesList){
-        ArrayList<Inference> inferences = getIntent().getParcelableArrayListExtra(INFERENCES_LIST);
-        Date[] demoTimestamps = {new Date(1618360856000L), new Date(1618361756000L), new Date(1618363256000L), new Date(1618363856000L), new Date(1618364276000L)};
-        int[] demoImgs = {R.drawable.studying, R.drawable.napping, R.drawable.computer, R.drawable.typing, R.drawable.chores};
+        Parcelable[] parcelableInferences = getIntent().getParcelableArrayExtra(INFERENCES_LIST);
+        Inference[] inferences = null;
+        if (parcelableInferences != null) {
+            inferences = Arrays.copyOf(parcelableInferences, parcelableInferences.length, Inference[].class);
+        }
+//        Date[] demoTimestamps = {new Date(1618360856000L), new Date(1618361756000L), new Date(1618363256000L), new Date(1618363856000L), new Date(1618364276000L)};
+//        int[] demoImgs = {R.drawable.studying, R.drawable.napping, R.drawable.computer, R.drawable.typing, R.drawable.chores};
 
-        String[] demoNames = new String[demoImgs.length];
-        for(int i = 0; i < demoImgs.length; i++){
-            demoNames[i] = "Activity " + i;
+        String[] inferenceNames = new String[inferences.length];
+        SharedPreferences sp = this.getSharedPreferences("inferenceInfo", Context.MODE_PRIVATE);
+        for(int i = 0; i < inferences.length; i++){
+            int activityId = inferences[i].getActivityId();
+            inferenceNames[i] = sp.getString("activity" + activityId + "Name", "Activity " + activityId);
         }
 
-        String[] demoTimestampStrings = new String[demoTimestamps.length];
-        for(int i = 0; i < demoTimestampStrings.length; i ++){
-            String d = demoTimestamps[i].toString();
-            String[] dateParts = d.split(":");
-            demoTimestampStrings[i] = dateParts[0] + ":" + dateParts[1];;
-        }
-
-        InferencesListAdapter adapter = new InferencesListAdapter(this, demoNames, demoTimestampStrings, demoImgs);
+        InferencesListAdapter adapter = new InferencesListAdapter(this, inferenceNames, inferences);
         inferencesList.setAdapter(adapter);
         inferencesList.setLayoutManager(new LinearLayoutManager(this));
 
