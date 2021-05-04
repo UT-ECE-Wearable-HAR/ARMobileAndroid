@@ -23,7 +23,7 @@ public class Session {
     private Inference[] inferences;
     public Session(int id, Context context) {
         this.id = id;
-        SharedPreferences sp = context.getSharedPreferences("inferenceInfo", Context.MODE_PRIVATE);
+        SharedPreferences sp = context.getSharedPreferences(Inference.INFERENCE_STORE_KEY, Context.MODE_PRIVATE);
         startTime = new Date(sp.getLong("session" + id + "Start", 0));
         endTime = new Date(sp.getLong("session" + id + "End", 0));
         String imgBytes = sp.getString("session" + id + "Img", null);
@@ -63,7 +63,7 @@ public class Session {
     }
 
     public static Session[] getAllSessions(Context context){
-        SharedPreferences sp = context.getSharedPreferences("inferenceInfo", Context.MODE_PRIVATE);
+        SharedPreferences sp = context.getSharedPreferences(Inference.INFERENCE_STORE_KEY, Context.MODE_PRIVATE);
         int numSessions = sp.getInt("currLargestSessionID", -1) + 1;
         Session[] allSessions = new Session[numSessions];
         for(int i = 0; i < numSessions; i++){
@@ -73,7 +73,7 @@ public class Session {
     }
 
     public static void saveSession(Context context, JSONObject jsonObject) throws JSONException {
-        SharedPreferences sp = context.getSharedPreferences("inferenceInfo", Context.MODE_PRIVATE);
+        SharedPreferences sp = context.getSharedPreferences(Inference.INFERENCE_STORE_KEY, Context.MODE_PRIVATE);
         int id = sp.getInt("currLargestSessionID", -1) + 1;
         //TODO call apis on a separate thread
         long[][] timestamps = RecogitionAPIImpl.getInstance().getTimestamps(context, jsonObject.getJSONArray("activities"));

@@ -11,6 +11,7 @@ import android.util.Base64;
 import java.util.Date;
 
 public class Inference implements Parcelable {
+    public static String INFERENCE_STORE_KEY = "inferenceInfo";
     private int id;
     private long startTime;
     private long endTime;
@@ -19,7 +20,7 @@ public class Inference implements Parcelable {
 
     public Inference(int id, Context context){
         this.id = id;
-        SharedPreferences sp = context.getSharedPreferences("inferenceInfo", Context.MODE_PRIVATE);
+        SharedPreferences sp = context.getSharedPreferences(INFERENCE_STORE_KEY, Context.MODE_PRIVATE);
         startTime = sp.getLong("inference" + id + "Start", 0);
         endTime = sp.getLong("inference" + id + "End", 0);
         String imgBytes = sp.getString("inference" + id + "Img", null);
